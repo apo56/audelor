@@ -1,0 +1,274 @@
+Note Formation CDE:
+
+_______________________________________________
+TP1:
+
+MDX population_query:
+1ere requete non optimisée
+sélection en colonne -> en tête en trop
+WITH
+SET [~COLUMNS_borne_periode_borne_periode] AS
+    {[borne_periode].[Oui]}
+SET [~COLUMNS_zonage_administratif_zonage_administratif] AS
+    {[zonage_administratif].[France].[FR].[Bretagne]}
+SET [~ROWS] AS
+    {[temps].[annee].Members}
+SELECT
+NON EMPTY CrossJoin(NonEmptyCrossJoin([~COLUMNS_borne_periode_borne_periode], [~COLUMNS_zonage_administratif_zonage_administratif]), {[Measures].[population]}) ON COLUMNS,
+NON EMPTY [~ROWS] ON ROWS
+FROM [populations_indic]
+--------------------
+
+2eme requete en utilisant les filtres
+
+WITH
+SET [~ROWS] AS
+    {[temps].[annee].Members}
+SELECT
+NON EMPTY {[Measures].[population]} ON COLUMNS,
+NON EMPTY [~ROWS] ON ROWS
+FROM [populations_indic]
+WHERE CrossJoin({[zonage_administratif].[France].[FR].[Bretagne]}, {[borne_periode].[Oui]})
+
+_______________________________________________
+femmes_hommes_query
+
+WITH
+SET [~ROWS] AS
+    {[temps].[annee].Members}
+SELECT
+NON EMPTY {[Measures].[population_h], [Measures].[population_f]} ON COLUMNS,
+NON EMPTY [~ROWS] ON ROWS
+FROM [populations_indic]
+WHERE CrossJoin({ [France].[FR].[Bretagne]}, {[borne_periode].[Oui]})
+
+_______________________________________________
+Si données seulement 2 colonnes -> crosstabMode -> false
+
+Attention pie chart a la con :
+l'axe des x est foireux, il est faut gérer -> MultiChartIndex
+_______________________________________________
+Function rezise windows auto
+-> faire un ressource puis appel via This.
+
+function
+ f() {
+var myself = this;
+// permet d'abonner une seule fois la fonction debouncedResize à l'evenement resize
+if (!this.resizeHandlerAttached) {
+// permet de temporiser l'affichage du graphique
+var debouncedResize = _.debounce(
+function
+ () { // affiche le graphique
+myself.placeholder().children().css('visibility', 'visible');
+// adapte les dimensions du graphique
+myself.chartDefinition.width = myself.placeholder().width();
+myself.chartDefinition.height = myself.placeholder().height();
+// retrace le graphique
+myself.update(); }, 200);
+// abonne la fonction debouncedResize a l'evenement resize
+$(window).resize(function() {
+// execute la fonction debouncedResize que si les dimensions ont changees
+if (myself.chartDefinition.width != myself.placeholder().width() ||
+myself.chartDefinition.height != myself.placeholder().heihgt()) {
+// masque temporairement le graphique
+myself.placeholder().children().css('visibility', 'hidden');
+// execute la fonction debouncedResize
+debouncedResize(); }
+});
+// permet de signaler l'abonnement
+this.resizeHandlerAttached = true;
+}
+}
+_______________________________________________
+Possibilité de récupérer requete mdx sous forme JSON
+
+creation requete cda -> recuperation de l'url api rest
+
+_______________________________________________
+code css de stat || block a intégrer sur dashboards
+
+/***
+Dashboard Stats
+***/
+.dashboard-stat {
+  display: block;
+  margin-bottom: 25px;
+  overflow: hidden;
+}
+.dashboard-stat:before, .dashboard-stat:after {
+  content: " ";
+  display: table;
+}
+.dashboard-stat:after {
+  clear: both;
+}
+4
+.dashboard-stat .visual {
+  width: 80px;
+  height: 80px;
+  display: block;
+  float: left;
+  padding-top: 0px;
+  padding-left: 15px;
+  margin-bottom: 15px;
+  font-size: 35px;
+  line-height: 35px;
+}
+.dashboard-stat .visual > i {
+  margin-left: -35px;
+  font-size: 110px;
+  line-height: 110px;
+}
+.dashboard-stat .details {
+  position: absolute;
+  right: 15px;
+  padding-right: 15px;
+}
+.dashboard-stat .details .number {
+  padding-top: 25px;
+  text-align: right;
+  font-size: 34px;
+  line-height: 36px;
+  letter-spacing: -1px;
+  margin-bottom: 0px;
+  font-weight: 300;
+}
+.dashboard-stat .details .desc {
+  text-align: right;
+  font-size: 16px;
+  letter-spacing: 0px;
+  font-weight: 300;
+}
+/* Statistic Block */
+.dashboard-stat.pink {
+  background-color: #FFC0CB;
+}
+.dashboard-stat.blue {
+  background-color: #1F77B4;
+}
+.dashboard-stat.green {
+  background-color: #6ed3cf;
+}
+.dashboard-stat.purple {
+  background-color: #9068be;
+}
+.dashboard-stat .visual > i {
+  color: #333333;
+  opacity: 0.2;
+  filter: alpha(opacity=10);
+}
+.dashboard-stat .details .number {
+5
+  color: #333333;
+}
+.dashboard-stat .details .desc {
+  color: #333333;
+  opacity: 1;
+  filter: alpha(opacity=100);
+}
+_______________________________________________
+code js reisze template
+
+$(document).ready(function(){
+    var resizeBox = function () {
+var height = getViewPort().height - $("#header").height()
+- $('#row_1').height();
+height = (height < 750) ? 750 : height;
+$('#evolution_population_box, #soldes_box, #dependance_box, #synthese_box').css("height", ((height -50) / 2));
+        $(window).trigger("boxresized");
+    };
+    // permet de temporiser le redimmensionnement du template
+var debouncedTemplateResize = _.debounce(resizeBox, 200);
+resizeBox();
+// abonne la fonction debouncedResize a l'evenement resize
+$(window).resize(function () {
+// execute la fonction debouncedTemplateResize
+debouncedTemplateResize();
+});
+});
+_______________________________________________
+Resize component via function définie en ressource
+
+function(f){
+ resizeComponentHandler.apply(this);
+}
+
+_______________________________________________
+Solution debug
+
+Voire requete ajax (XHR) dans network de la console web
+-> requete mdx visible
+_______________________________________________
+Pour test
+[zonage_administratif].[France].[FR].[Bretagne]
+_______________________________________________
+code jquery utile
+$("#jeunesse_box").find('.number, .desc').empty();
+_______________________________________________
+pyramide des ages
+
+WITH
+SET [~COLUMNS_zonage_administratif_zonage_administratif] AS
+    {[zonage_administratif].[lib_etat].Members}
+SET [~COLUMNS_tranches_age5_tranches_age5] AS
+    {[tranches_age5].[tranche_quinquennale].Members}
+SET [~ROWS] AS
+    {[temps].[2014]}
+SELECT
+NON EMPTY CrossJoin(NonEmptyCrossJoin([~COLUMNS_zonage_administratif_zonage_administratif], [~COLUMNS_tranches_age5_tranches_age5]), {[Measures].[population]}) ON COLUMNS,
+NON EMPTY [~ROWS] ON ROWS
+FROM [populations_age5_sexe]
+
+_______________________________________________
+code intéressant pour récupérer value/utilité d'un composant
+
+ex ->
+1)rentrer dans une function sur un component
+2)advanced properties
+3)baseAxisThickFormatter
+
+4) function f(value){
+  console.log(value);     //rérécupère l'argument (si il y en a un pour la function)
+  console.log(this);      //récupère les méthodes du component
+}
+_______________________________________________
+Raccourci clavier dans CDE
+
+shift + g =
+CDE can generate CGG scripts to allow charts to be exported.
+Choose the ones you want, and files will be generated when you save the dashboard
+
+shift + r =
+sur layout panel ->add d'une row
+
+shift + p =
+preview
+
+shift + s =
+save du dashboard
+
+shift + d =
+duplicate element selectionné
+
+shift + x =
+suppression element
+
+shift + v =
+écran de validation
+
+shift + 1|2|3 (écran layout|component|datasource) =
+changement d'écran
+
+_______________________________________________
+
+Dans cda possiblité de récupérer une query
+
+keycode 
+83
+80
+71
+219
+222
+86
+{[[[]]]}
