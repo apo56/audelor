@@ -1,0 +1,14 @@
+OBJ:
+Installation d'une gestion des tickets sur le réseau local de Audelor
+-> adaptation de Mantis pour en faire une gestion des demandes d'intégration de Db
+-> Création d'un wiki après le suivi des demandes de support -> 
+      pb -> résolution étape par étape
+
+
+Téléchargement de Bitnami Wamp -> infrastructure de base
+Wamp: Windob
+      Apache
+      Mysql
+      PhpMyadmin
+
+Téléchargement de Bitnami Mantis
