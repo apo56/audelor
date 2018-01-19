@@ -1,0 +1,321 @@
+Note Intégration siren 29+56
+
+Pierre,
+Données à intégrer sous POSTGRES :
+Fichier SIRENE au 01/01/2018 sur :
+- département 56
+- département 29
+Prendre les fichiers géocodés ici : http://212.47.238.202/geo_sirene/last/
+Pour info : SIRENE en Opendata : https://www.data.gouv.fr/fr/datasets/base-sirene-des-entreprises-et-de-leurs-etablissements-siren-siret/
+Pour la structuration, voir les données précédemment intégrées sur POSTGRES (situation au 30 juin 2017) dans le schéma aud_entreprises
+Il faudra :
+- créer des tables avec le point localisant à partir des coordonnées présentes.
+- créer une ou plusieurs vues sur les périmètres :
+•	Zone d’emploi de Lorient,
+•	Pays de Lorient,
+•	Pays de Lorient + CC pays de Quimperlé.
+________________________
+Pistes:
+ST_Intersects(p.geomloc,e.geom)
+
+________________________
+-- Table actuelle : aud_entreprises.geo_sirene_29_56_juin17
+
+-- DROP TABLE aud_entreprises.geo_sirene_29_56_juin17;
+
+CREATE TABLE aud_entreprises.geo_sirene_29_56_juin17
+(
+  id serial NOT NULL,
+  geom geometry(MultiPoint,2154),
+  siren character varying(9),
+  nic character varying(5),
+  l1_normali character varying(38),
+  l2_normali character varying(38),
+  l3_normali character varying(38),
+  l4_normali character varying(38),
+  l5_normali character varying(50),
+  l6_normali character varying(33),
+  l7_normali character varying(10),
+  l1_declare character varying(50),
+  l2_declare character varying(50),
+  l3_declare character varying(50),
+  l4_declare character varying(50),
+  l5_declare character varying(50),
+  l6_declare character varying(50),
+  l7_declare character varying(254),
+  numvoie character varying(4),
+  indrep character varying(1),
+  typvoie character varying(4),
+  libvoie character varying(32),
+  codpos character varying(5),
+  cedex character varying(5),
+  depet character varying(2),
+  comet character varying(3),
+  tcd character varying(2),
+  siege character varying(1),
+  enseigne character varying(50),
+  ind_publip character varying(15),
+  diffcom character varying(1),
+  amintret character varying(6),
+  natetab character varying(1),
+  apet700 character varying(5),
+  dapet character varying(4),
+  tefet character varying(2),
+  efetcent character varying(6),
+  defet character varying(4),
+  origine character varying(2),
+  dcret character varying(8),
+  ddebact character varying(254),
+  activnat character varying(2),
+  lieuact character varying(2),
+  actisurf character varying(2),
+  saisonat character varying(2),
+  modet character varying(1),
+  prodet character varying(1),
+  prodpart character varying(1),
+  auxilt character varying(1),
+  nomen_long character varying(131),
+  sigle character varying(20),
+  nom character varying(150),
+  prenom character varying(150),
+  civilite character varying(1),
+  rna character varying(20),
+  nicsiege character varying(25),
+  rpen character varying(2),
+  depcomen character varying(5),
+  adr_mail character varying(254),
+  nj character varying(4),
+  apen700 character varying(5),
+  dapen character varying(4),
+  aprm character varying(6),
+  ess character varying(1),
+  dateess character varying(254),
+  tefen character varying(2),
+  efencent character varying(6),
+  defen character varying(4),
+  categorie character varying(5),
+  dcren character varying(8),
+  amintren character varying(6),
+  monoact character varying(1),
+  moden character varying(1),
+  proden character varying(1),
+  esaann character varying(4),
+  tca character varying(1),
+  esaapen character varying(5),
+  esasec1n character varying(5),
+  esasec2n character varying(5),
+  esasec3n character varying(5),
+  esasec4n character varying(5),
+  vmaj character varying(1),
+  vmaj1 character varying(1),
+  vmaj2 character varying(1),
+  vmaj3 character varying(1),
+  datemaj character varying(25),
+  longitude character varying(15),
+  latitude character varying(15),
+  geo_score character varying(15),
+  geo_type character varying(13),
+  geo_adress character varying(100),
+  geo_id character varying(30),
+  geo_ligne character varying(1),
+  siret character varying(14),
+  depcomet character varying(5),
+  CONSTRAINT geo_sirene_29_56_juin17_pkey PRIMARY KEY (id)
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE aud_entreprises.geo_sirene_29_56_juin17
+  OWNER TO audelor;
+GRANT ALL ON TABLE aud_entreprises.geo_sirene_29_56_juin17 TO audelor;
+GRANT SELECT ON TABLE aud_entreprises.geo_sirene_29_56_juin17 TO gdouser;
+GRANT SELECT ON TABLE aud_entreprises.geo_sirene_29_56_juin17 TO fme_agglo;
+GRANT SELECT ON TABLE aud_entreprises.geo_sirene_29_56_juin17 TO fme_audelor;
+GRANT SELECT ON TABLE aud_entreprises.geo_sirene_29_56_juin17 TO sigclient;
+GRANT SELECT ON TABLE aud_entreprises.geo_sirene_29_56_juin17 TO sigtravail;
+GRANT SELECT ON TABLE aud_entreprises.geo_sirene_29_56_juin17 TO sigadmin;
+GRANT ALL ON TABLE aud_entreprises.geo_sirene_29_56_juin17 TO audadmin;
+GRANT SELECT, UPDATE, INSERT, DELETE ON TABLE aud_entreprises.geo_sirene_29_56_juin17 TO dsitravail;
+
+-- Index: aud_entreprises.sidx_geo_sirene_29_56_juin17_geom
+
+-- DROP INDEX aud_entreprises.sidx_geo_sirene_29_56_juin17_geom;
+
+CREATE INDEX sidx_geo_sirene_29_56_juin17_geom
+  ON aud_entreprises.geo_sirene_29_56_juin17
+  USING gist
+  (geom);
+
+
+________________________
+UPDATE aud_entreprises.geo_sirene_29_56_juin17
+SET cgrnumd='08',
+cgrnumdtxt='EAUX',
+________________________
+
+select * from audelor.compare_table('sirene_29_56_juin18','sirene_29_56_juin17');
+
+column absente dans une des tables :
+siret
+depcomet
+geom
+id
+________________________
+siret=siren+nic
+---------
+V0
+UPDATE ma_table
+SET ch1 = ch2 || ch3
+WHERE ch1 = 'valeur';
+V1
+UPDATE aud_entreprises.geo_sirene_29_56_juin18
+SET siret= siren ||nic;
+________________________
+depcomet=depet+comet
+---------
+UPDATE aud_entreprises.geo_sirene_29_56_juin18
+SET depcomet=depet || comet;
+________________________
+id 
+---------
+V0
+ALTER TABLE aud_entreprises.geo_sirene_29_56_juin18 ADD COLUMN id SERIAL PRIMARY KEY;
+||
+ALTER TABLE geo_sirene_29_56_juin18 ADD COLUMN id SERIAL PRIMARY KEY;
+OR
+create table aud_entreprises.geo_sirene_29_56_juin18(
+id serial NOT NULL,
+________________________
+geom
+---------
+
+1 via function postgis
+OU
+2 via qgis import table avec champs long/lat 
+  création geom
+  export postgresql geo_nom_table
+
+________________________
+Etapes:
+1)Création table sirene_29_56_juin18 
+2)Insert via PDI
+3)Création table geo_sirene_29_56_juin18 
+4)Création vue via geo_sirene_29_56_juin18
+________________________
+1)Création table sirene_29_56_janv18 
+
+V0
+create table aud_entreprises.sirene_29_56_janv18 as 
+  select * from aud_entreprises.sirene_29_56_juin17
+V1
+  CREATE TABLE aud_entreprises.sirene_29_56_janv18
+  ( id serial NOT NULL,
+    siren character varying(9),
+    depcomet character varying(5),
+    siret character varying(14),
+    nic character varying(5),
+    l1_normalisee character varying(38),
+    l2_normalisee character varying(38),
+    l3_normalisee character varying(38),
+    l4_normalisee character varying(38),
+    l5_normalisee character varying(50),
+    l6_normalisee character varying(33),
+    l7_normalisee character varying(10),
+    l1_declaree character varying(50),
+    l2_declaree character varying(50),
+    l3_declaree character varying(50),
+    l4_declaree character varying(50),
+    l5_declaree character varying(50),
+    l6_declaree character varying(50),
+    l7_declaree text,
+    numvoie character varying(4),
+    indrep character varying(1),
+    typvoie character varying(4),
+    libvoie character varying(32),
+    codpos character varying(5),
+    cedex character varying(5),
+    depet character varying(2),
+    comet character varying(3),
+    tcd character varying(2),
+    siege character varying(1),
+    enseigne character varying(50),
+    ind_publipo character varying(20),
+    diffcom character varying(1),
+    amintret character varying(6),
+    natetab character varying(1),
+    apet700 character varying(5),
+    dapet character varying(4),
+    tefet character varying(2),
+    efetcent character varying(6),
+    defet character varying(4),
+    origine character varying(2),
+    dcret character varying(8),
+    ddebact text,
+    activnat character varying(2),
+    lieuact character varying(2),
+    actisurf character varying(2),
+    saisonat character varying(2),
+    modet character varying(1),
+    prodet character varying(1),
+    prodpart character varying(1),
+    auxilt character varying(1),
+    nomen_long character varying(131),
+    sigle character varying(20),
+    nom character varying(150),
+    prenom character varying(150),
+    civilite character varying(1),
+    rna character varying(20),
+    nicsiege character varying(25),
+    rpen character varying(2),
+    depcomen character varying(5),
+    adr_mail text,
+    nj character varying(4),
+    apen700 character varying(5),
+    dapen character varying(4),
+    aprm character varying(6),
+    ess character varying(1),
+    dateess text,
+    tefen character varying(2),
+    efencent character varying(6),
+    defen character varying(4),
+    categorie character varying(5),
+    dcren character varying(8),
+    amintren character varying(6),
+    monoact character varying(1),
+    moden character varying(1),
+    proden character varying(1),
+    esaann character varying(4),
+    tca character varying(1),
+    esaapen character varying(5),
+    esasec1n character varying(5),
+    esasec2n character varying(5),
+    esasec3n character varying(5),
+    esasec4n character varying(5),
+    vmaj character varying(1),
+    vmaj1 character varying(1),
+    vmaj2 character varying(1),
+    vmaj3 character varying(1),
+    datemaj character varying(25),
+    longitude character varying(25),
+    latitude character varying(25),
+    geo_score character varying(25),
+    geo_type character varying(25),
+    geo_adresse character varying(100),
+    geo_id character varying(30),
+    geo_ligne character varying(1)
+  );
+
+  UPDATE aud_entreprises.sirene_29_56_juin18
+  SET depcomet=depet || comet;
+
+  UPDATE aud_entreprises.geo_sirene_29_56_juin18
+  SET siret= siren ||nic;
+________________________
+2)Insert via PDI
+---------
+V0
+ktr très lent 
+Extraction parralele csv 29 + 56 -> insertion/maj table 
+80 r/s
+---------
+V1
