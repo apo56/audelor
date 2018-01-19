@@ -1,0 +1,3 @@
+I want to create folder in github repository and add files in that folder. How to achieve this?
+->git doesn't store empty folders. Just make sure there's a file in the folder like doc/foo.txt 
+------------
